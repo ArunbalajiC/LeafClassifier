@@ -38,7 +38,7 @@ if input_method == "Take a Photo":
             predictions = leaf_classifier(image)
 
         # Display Results
-        st.markdown("### 🌟 Results:")
+        st.markdown("### 🌟 The leaf you are looking at could be:")
         for pred in predictions:
             st.markdown(f"<span style='color:green;font-size:18px;'>✔️ **{pred['label']}**</span>", unsafe_allow_html=True)
 else:
@@ -55,7 +55,7 @@ else:
             predictions = leaf_classifier(image)
 
         # Display Results
-        st.markdown("### 🌟 Results:")
+        st.markdown("### 🌟 The leaf you are looking at could be:")
         for pred in predictions:
             st.markdown(f"<span style='color:green;font-size:18px;'>✔️ **{pred['label']}**</span>", unsafe_allow_html=True)
 
