@@ -1,8 +1,6 @@
 import streamlit as st
 from transformers import pipeline
 from PIL import Image
-import cv2
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 
 # Load the leaf classification pipeline
 @st.cache_resource
@@ -12,55 +10,62 @@ def load_pipeline():
 leaf_classifier = load_pipeline()
 
 # Title and Description
-st.title("What leaf are you looking at?")
-st.write("Upload an image of a leaf or take a photo to find out!")
+st.title("🍃 What Leaf Are You Looking At?")
 
-# Option to choose input method
+# Input Method Selector
+st.subheader("📤 Upload an image or take a photo to find out!")
 input_method = st.radio(
-    "Choose your input method:",
-    ("Upload an Image", "Take a Photo")
+    "",
+    ("Upload an Image", "Take a Photo"),
+    horizontal=True,
+    label_visibility="collapsed"
 )
 
-# Webcam Capture Class
-class VideoTransformer(VideoTransformerBase):
-    def transform(self, frame):
-        return frame
+st.markdown("---")
 
+# Dynamic Content Based on Input Method
 if input_method == "Take a Photo":
-    st.write("Capture a photo using your webcam:")
-    # Start webcam stream
-    ctx = webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
+    st.subheader("📸 Capture a Photo")
+    st.write("Use your webcam to take a picture of the leaf:")
+    image_data = st.camera_input("Take a picture")
 
-    if ctx.video_transformer:
-        if st.button("Capture Photo"):
-            # Capture a single frame from the video stream
-            frame = ctx.video_transformer.frame
-            if frame is not None:
-                image = Image.fromarray(frame.to_ndarray(format="rgb"))
-                st.image(image, caption="Captured Photo", use_container_width=True)
-                
-                # Perform classification
-                st.write("Classifying...")
-                predictions = leaf_classifier(image)
+    if image_data:
+        with st.spinner("Processing your image..."):
+            image = Image.open(image_data)
+            st.image(image, caption="Captured Photo", use_container_width=True)
 
-                # Display results
-                st.write("### Predictions:")
-                for pred in predictions:
-                    st.write(f"**{pred['label']}**: {pred['score']:.4f}")
+            # Perform classification
+            predictions = leaf_classifier(image)
+
+        # Display Results
+        st.markdown("### 🌟 Results:")
+        for pred in predictions:
+            st.markdown(f"<span style='color:green;font-size:18px;'>✔️ **{pred['label']}**</span>", unsafe_allow_html=True)
 else:
-    # File Upload Option
+    st.subheader("📁 Upload an Image")
+    st.write("Select an image file from your device:")
     uploaded_file = st.file_uploader("Choose a leaf image...", type=["jpg", "png", "jpeg"])
 
     if uploaded_file is not None:
-        # Display the uploaded image
-        image = Image.open(uploaded_file)
-        st.image(image, use_container_width=True)
-        # st.write("...")
+        with st.spinner("Processing your image..."):
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Uploaded Image", use_container_width=True)
 
-        # Perform classification
-        predictions = leaf_classifier(image)
+            # Perform classification
+            predictions = leaf_classifier(image)
 
-        # Display results
-        st.write("### The leaf you are looking at could be :")
+        # Display Results
+        st.markdown("### 🌟 Results:")
         for pred in predictions:
-            st.write(f"**{pred['label']}**")
+            st.markdown(f"<span style='color:green;font-size:18px;'>✔️ **{pred['label']}**</span>", unsafe_allow_html=True)
+
+# Footer
+st.markdown("---")
+st.markdown(
+    """
+    <div style="text-align:center;">
+        <small>Created with ❤️ - Arunbalaji</small>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
